@@ -1,0 +1,14 @@
+{
+  "name": "sistech-desk-root",
+  "version": "1.0.0",
+  "description": "Sistech Desk - Central de Chamados Internos da Santa Casa de Pelotas",
+  "scripts": {
+    "server:dev": "cd server && npm run dev",
+    "client:dev": "cd client && npm run dev",
+    "server:build": "cd server && npm run build",
+    "client:build": "cd client && npm run build",
+    "db:migrate": "cd server && npm run migrate",
+    "db:seed": "cd server && npm run seed",
+    "db:setup-admin": "cd server && npm run setup-admin"
+  }
+}

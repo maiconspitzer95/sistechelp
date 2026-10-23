@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const sectors_controller_js_1 = require("./sectors.controller.js");
+const auth_js_1 = require("../../middlewares/auth.js");
+const router = (0, express_1.Router)();
+router.get('/', sectors_controller_js_1.listSectors);
+router.post('/', auth_js_1.authMiddleware, (0, auth_js_1.requireRole)(['master']), sectors_controller_js_1.createSector);
+router.put('/:id', auth_js_1.authMiddleware, (0, auth_js_1.requireRole)(['master']), sectors_controller_js_1.updateSector);
+exports.default = router;
