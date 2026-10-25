@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('sistech_token');

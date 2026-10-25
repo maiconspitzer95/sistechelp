@@ -1,12 +1,16 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
+// Carrega .env da raiz do projeto com prioridade, e em seguida server/.env se existir
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 export const env = {
-  PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 3001,
-  NODE_ENV: process.env.NODE_ENV || 'development',
-  CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',
+  PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 5002,
+  HOST: process.env.HOST || '0.0.0.0',
+  NODE_ENV: process.env.NODE_ENV || 'production',
+  CLIENT_URL: process.env.CLIENT_URL || '',
   DB: {
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5434,

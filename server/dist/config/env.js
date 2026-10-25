@@ -6,11 +6,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.env = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
+// Carrega .env da raiz do projeto com prioridade, e em seguida server/.env se existir
+dotenv_1.default.config({ path: path_1.default.resolve(process.cwd(), '.env') });
+dotenv_1.default.config({ path: path_1.default.resolve(__dirname, '../../../.env') });
 dotenv_1.default.config({ path: path_1.default.resolve(__dirname, '../../.env') });
 exports.env = {
-    PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 3001,
-    NODE_ENV: process.env.NODE_ENV || 'development',
-    CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',
+    PORT: process.env.PORT ? parseInt(process.env.PORT, 10) : 5002,
+    HOST: process.env.HOST || '0.0.0.0',
+    NODE_ENV: process.env.NODE_ENV || 'production',
+    CLIENT_URL: process.env.CLIENT_URL || '',
     DB: {
         host: process.env.DB_HOST || 'localhost',
         port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5434,

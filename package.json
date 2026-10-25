@@ -1,14 +1,29 @@
 {
-  "name": "sistech-desk-root",
+  "name": "sistech-desk",
   "version": "1.0.0",
   "description": "Sistech Desk - Central de Chamados Internos da Santa Casa de Pelotas",
+  "main": "server.js",
   "scripts": {
+    "build": "npm run server:build && npm run client:build",
+    "start": "node server.js",
+    "dev": "npm run server:dev",
+    "install:all": "npm --prefix server install && npm --prefix client install",
     "server:dev": "cd server && npm run dev",
     "client:dev": "cd client && npm run dev",
     "server:build": "cd server && npm run build",
     "client:build": "cd client && npm run build",
+    "migrate": "cd server && npm run migrate",
+    "seed": "cd server && npm run seed",
+    "setup-admin": "cd server && npm run setup-admin",
     "db:migrate": "cd server && npm run migrate",
     "db:seed": "cd server && npm run seed",
     "db:setup-admin": "cd server && npm run setup-admin"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "pg": "^8.13.1",
+    "socket.io": "^4.8.1"
   }
 }
