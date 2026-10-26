@@ -7,6 +7,9 @@ import {
   updateStatus,
   resolveTicket,
   completeTicket,
+  getQueueStats,
+  getMyAssignedStats,
+  getMyAssignedTickets,
 } from './tickets.controller.js';
 import { listCategories, getCategoryBySlug } from './categories.controller.js';
 import { authMiddleware } from '../../middlewares/auth.js';
@@ -19,6 +22,9 @@ router.get('/categories/:slug', getCategoryBySlug);
 
 // Chamados autenticados
 router.get('/', authMiddleware, listTickets);
+router.get('/queue-stats', authMiddleware, getQueueStats);
+router.get('/my-stats', authMiddleware, getMyAssignedStats);
+router.get('/my-assigned', authMiddleware, getMyAssignedTickets);
 router.get('/:id', authMiddleware, getTicket);
 router.post('/', authMiddleware, createTicket);
 router.post('/:id/assign', authMiddleware, assignTicket);

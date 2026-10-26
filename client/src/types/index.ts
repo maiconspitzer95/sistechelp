@@ -94,6 +94,11 @@ export interface Ticket {
   updated_at: string;
   total_mensagens?: number;
   mensagens_nao_lidas?: number;
+  ultima_mensagem_em?: string;
+  tipo_participacao?: string;
+  tecnico_atual_nome?: string;
+  motivo_transferencia?: string;
+  transferido_em?: string;
   formulario_dados?: Record<string, any>;
   colaboradores_acesso?: Array<{
     nome: string;

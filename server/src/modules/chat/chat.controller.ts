@@ -107,9 +107,12 @@ export async function sendMessage(req: AuthRequest, res: Response) {
       autor_perfil_nome: user.perfil_nome,
     };
 
+    let updatedTicketStatus = ticket.status;
+
     // Fluxo automático de status:
     // 1. Técnico solicitou informações adicionais -> Chamado muda para 'aguardando_usuario'
     if (solicitar_info && !isNota) {
+      updatedTicketStatus = 'aguardando_usuario';
       await query(
         `UPDATE chamados SET status = 'aguardando_usuario', updated_at = NOW() WHERE id = $1`,
         [chamadoId]
@@ -122,6 +125,7 @@ export async function sendMessage(req: AuthRequest, res: Response) {
     }
     // 2. Colaborador respondeu e estava em 'aguardando_usuario' -> Retorna automaticamente para 'em_atendimento'
     else if (user.id === ticket.solicitante_id && ticket.status === 'aguardando_usuario') {
+      updatedTicketStatus = 'em_atendimento';
       await query(
         `UPDATE chamados SET status = 'em_atendimento', updated_at = NOW() WHERE id = $1`,
         [chamadoId]
@@ -136,7 +140,7 @@ export async function sendMessage(req: AuthRequest, res: Response) {
       if (ticket.tecnico_id) {
         await query(
           `INSERT INTO notificacoes (usuario_id, chamado_id, titulo, mensagem, tipo, link)
-           VALUES ($1, $2, 'Resposta recebida no chamado', 'O colaborador ' || $3 || ' respondeu no chamado ' || $4, 'mensagem_recebida', '/technician/tickets/' || $2)`,
+           VALUES ($1, $2::uuid, 'Resposta recebida no chamado', 'O colaborador ' || $3 || ' respondeu no chamado ' || $4, 'mensagem_recebida', '/technician/tickets/' || $2::text)`,
           [ticket.tecnico_id, chamadoId, user.nome, ticket.protocolo]
         );
       }
@@ -145,7 +149,7 @@ export async function sendMessage(req: AuthRequest, res: Response) {
     else if (user.id !== ticket.solicitante_id && !isNota) {
       await query(
         `INSERT INTO notificacoes (usuario_id, chamado_id, titulo, mensagem, tipo, link)
-         VALUES ($1, $2, 'Nova mensagem no seu chamado', $3 || ' enviou uma resposta no chamado ' || $4, 'mensagem_recebida', '/collaborator/tickets/' || $2)`,
+         VALUES ($1, $2::uuid, 'Nova mensagem no seu chamado', $3 || ' enviou uma resposta no chamado ' || $4, 'mensagem_recebida', '/collaborator/tickets/' || $2::text)`,
         [ticket.solicitante_id, chamadoId, user.nome, ticket.protocolo]
       );
     }
@@ -159,6 +163,24 @@ export async function sendMessage(req: AuthRequest, res: Response) {
       } else {
         // Mensagem pública para a sala do chamado
         io.to(`ticket_${chamadoId}`).emit('new_message', message);
+      }
+
+      // Notificação global para atualização em tempo real de filas e contadores
+      io.emit('new_message_global', {
+        chamado_id: chamadoId,
+        autor_id: user.id,
+        tecnico_id: ticket.tecnico_id,
+        status: updatedTicketStatus,
+        eh_nota_interna: isNota,
+      });
+
+      if (updatedTicketStatus !== ticket.status) {
+        io.emit('queue_updated', {
+          action: 'status_change',
+          ticketId: chamadoId,
+          status: updatedTicketStatus,
+          tecnico_id: ticket.tecnico_id,
+        });
       }
     }
 

@@ -1,0 +1,10 @@
+rodar no pgadmin:
+
+ALTER DATABASE sistech_desk OWNER TO mp_app;
+GRANT ALL ON SCHEMA public TO mp_app;
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+
+rodar 
+npm run migrate -> para subir para o banco
+npm run seed -> criar os usuários no banco

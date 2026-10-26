@@ -91,6 +91,10 @@ export const SistechAssistantModal: React.FC = () => {
       navigate('/tickets/new?cat=hardware-rede');
     } else if (action === 'open_ticket_login') {
       navigate('/tickets/new?cat=solicitar-login');
+    } else if (action === 'open_ticket_relatorio') {
+      navigate('/tickets/new?cat=relatorio');
+    } else if (action === 'open_ticket_novo_software') {
+      navigate('/tickets/new?cat=novo-programa');
     } else {
       navigate('/tickets/new');
     }

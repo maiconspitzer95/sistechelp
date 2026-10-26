@@ -184,9 +184,9 @@ async function runSeeds() {
             ordem: 4,
         },
         {
-            nome: 'Novo Programa',
+            nome: 'Novo Software',
             slug: 'novo-programa',
-            descricao: 'Propostas de novas ferramentas, automação de planilhas manuais e desenvolvimento interno de software',
+            descricao: 'Propostas de novas ferramentas, sistemas e automação de processos hospitalares',
             icone: 'Code',
             sla_horas: 72,
             ordem: 5,
@@ -213,7 +213,7 @@ async function runSeeds() {
             ];
             for (const f of campos) {
                 await (0, database_js_1.query)(`INSERT INTO campos_formulario (formulario_id, nome_campo, rotulo, tipo_campo, obrigatorio, placeholder, opcoes, ordem)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, [formId, f.nome, f.rotulo, f.tipo, f.obrigatorio, f.placeholder, f.opcoes, f.ordem]);
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, [formId, f.nome, f.rotulo, f.tipo, f.obrigatorio, f.placeholder, f.opcoes || null, f.ordem]);
             }
         }
         else if (c.slug === 'hardware-rede') {
@@ -224,7 +224,7 @@ async function runSeeds() {
             ];
             for (const f of campos) {
                 await (0, database_js_1.query)(`INSERT INTO campos_formulario (formulario_id, nome_campo, rotulo, tipo_campo, obrigatorio, placeholder, opcoes, ordem)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, [formId, f.nome, f.rotulo, f.tipo, f.obrigatorio, f.placeholder, f.opcoes, f.ordem]);
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, [formId, f.nome, f.rotulo, f.tipo, f.obrigatorio, f.placeholder, f.opcoes || null, f.ordem]);
             }
         }
         else if (c.slug === 'solicitar-login') {
@@ -235,33 +235,30 @@ async function runSeeds() {
             ];
             for (const f of campos) {
                 await (0, database_js_1.query)(`INSERT INTO campos_formulario (formulario_id, nome_campo, rotulo, tipo_campo, obrigatorio, placeholder, opcoes, ordem)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, [formId, f.nome, f.rotulo, f.tipo, f.obrigatorio, f.placeholder, f.opcoes, f.ordem]);
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, [formId, f.nome, f.rotulo, f.tipo, f.obrigatorio, f.placeholder, f.opcoes || null, f.ordem]);
             }
         }
         else if (c.slug === 'relatorio') {
             const campos = [
-                { nome: 'nome_relatorio', rotulo: 'Nome do Relatório', tipo: 'text', obrigatorio: true, placeholder: 'Ex: Censo Diário de Internações Cirúrgicas', ordem: 1 },
-                { nome: 'objetivo', rotulo: 'Objetivo da Análise', tipo: 'textarea', obrigatorio: true, placeholder: 'Qual decisão será tomada a partir desses dados?', ordem: 2 },
-                { nome: 'filtros_necessarios', rotulo: 'Filtros Necessários', tipo: 'textarea', obrigatorio: true, placeholder: 'Ex: Período de datas, setor, convênio, médico responsável', ordem: 3 },
-                { nome: 'sistema_origem', rotulo: 'Sistema de Origem dos Dados', tipo: 'text', obrigatorio: true, placeholder: 'Ex: SISHOS tela de internação', ordem: 4 },
-                { nome: 'formato_desejado', rotulo: 'Formato Desejado', tipo: 'select', obrigatorio: true, opcoes: JSON.stringify(['Planilha Excel (.xlsx)', 'Relatório em PDF', 'Dashboard / Painel Web', 'Direto na tela do sistema']), ordem: 5 },
+                { nome: 'titulo_relatorio', rotulo: 'Título do Relatório', tipo: 'text', obrigatorio: true, placeholder: 'Ex: Relatório de Atendimentos por Convênio', ordem: 1 },
+                { nome: 'sistema_origem', rotulo: 'Sistema ou Módulo de Origem dos Dados', tipo: 'text', obrigatorio: true, placeholder: 'Ex: SISHOS / PEP — Módulo de Internação', ordem: 2 },
+                { nome: 'necessidades_relatorio', rotulo: 'O que é necessário para o relatório?', tipo: 'textarea', obrigatorio: true, placeholder: 'Descreva quais informações devem aparecer no relatório. Ex.: número do atendimento, nome do paciente, data, setor, convênio, profissional responsável, valores, totais...', ordem: 3 },
+                { nome: 'filtros_necessarios', rotulo: 'Filtros Necessários', tipo: 'textarea', obrigatorio: false, placeholder: 'Ex.: Período inicial e final, setor, convênio, médico, tipo de atendimento, situação...', ordem: 4 },
             ];
             for (const f of campos) {
                 await (0, database_js_1.query)(`INSERT INTO campos_formulario (formulario_id, nome_campo, rotulo, tipo_campo, obrigatorio, placeholder, opcoes, ordem)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, [formId, f.nome, f.rotulo, f.tipo, f.obrigatorio, f.placeholder, f.opcoes, f.ordem]);
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, [formId, f.nome, f.rotulo, f.tipo, f.obrigatorio, f.placeholder, f.opcoes || null, f.ordem]);
             }
         }
         else if (c.slug === 'novo-programa') {
             const campos = [
-                { nome: 'nome_sugerido', rotulo: 'Nome Sugerido do Programa', tipo: 'text', obrigatorio: true, placeholder: 'Ex: Central de Agendamento de Dietas', opcoes: JSON.stringify([]), ordem: 1 },
-                { nome: 'problema_resolver', rotulo: 'Problema que Resolverá', tipo: 'textarea', obrigatorio: true, placeholder: 'Descreva a dificuldade atual que gera retrabalho', opcoes: JSON.stringify([]), ordem: 2 },
-                { nome: 'processo_atual', rotulo: 'Como o Processo Funciona Atualmente', tipo: 'textarea', obrigatorio: true, placeholder: 'Usa papéis impressos, planilhas Excel soltas, mensagens?', opcoes: JSON.stringify([]), ordem: 3 },
-                { nome: 'setores_envolvidos', rotulo: 'Setores Envolvidos', tipo: 'text', obrigatorio: true, placeholder: 'Ex: Nutrição, Enfermagem e Almoxarifado', opcoes: JSON.stringify([]), ordem: 4 },
-                { nome: 'beneficios_esperados', rotulo: 'Benefícios Esperados', tipo: 'textarea', obrigatorio: true, placeholder: 'Economia de tempo, segurança do paciente, redução de desperdício', opcoes: JSON.stringify([]), ordem: 5 },
+                { nome: 'descreva_software', rotulo: 'Descreva o Novo Software', tipo: 'textarea', obrigatorio: true, placeholder: 'Descreva o software que deseja desenvolver, sua finalidade, quais funcionalidades deverá possuir e qual problema pretende resolver.', ordem: 1 },
+                { nome: 'processo_atual', rotulo: 'Como o Processo Funciona Atualmente?', tipo: 'textarea', obrigatorio: true, placeholder: 'Explique como essa atividade é realizada hoje. Ex.: planilhas de Excel, formulários impressos, controles manuais, mensagens ou sistemas existentes.', ordem: 2 },
+                { nome: 'beneficios_esperados', rotulo: 'Benefícios Esperados para a Santa Casa', tipo: 'textarea', obrigatorio: true, placeholder: 'Descreva os benefícios esperados. Ex.: redução de retrabalho, economia de tempo, melhoria dos processos, segurança das informações e maior eficiência.', ordem: 3 },
             ];
             for (const f of campos) {
                 await (0, database_js_1.query)(`INSERT INTO campos_formulario (formulario_id, nome_campo, rotulo, tipo_campo, obrigatorio, placeholder, opcoes, ordem)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, [formId, f.nome, f.rotulo, f.tipo, f.obrigatorio, f.placeholder, f.opcoes, f.ordem]);
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`, [formId, f.nome, f.rotulo, f.tipo, f.obrigatorio, f.placeholder, f.opcoes || null, f.ordem]);
             }
         }
     }

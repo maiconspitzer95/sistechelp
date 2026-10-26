@@ -4,10 +4,14 @@ export async function runMigrations() {
   const client = await pool.connect();
   try {
     console.log('Iniciando migrations do Sistech Desk...');
-    await client.query('BEGIN');
+    // Habilitar extensão pgcrypto se permitido (gen_random_uuid é nativo no PostgreSQL 13+)
+    try {
+      await client.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+    } catch {
+      // Ignora caso o usuário da aplicação não seja superusuário
+    }
 
-    // Habilitar extensão pgcrypto para UUIDs nativos
-    await client.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto";');
+    await client.query('BEGIN');
 
     // 1. Tabela de Perfis
     await client.query(`

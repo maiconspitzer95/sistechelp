@@ -84,28 +84,31 @@ async function sendMessage(req, res) {
             autor_perfil_codigo: user.perfil_codigo,
             autor_perfil_nome: user.perfil_nome,
         };
+        let updatedTicketStatus = ticket.status;
         // Fluxo automático de status:
         // 1. Técnico solicitou informações adicionais -> Chamado muda para 'aguardando_usuario'
         if (solicitar_info && !isNota) {
+            updatedTicketStatus = 'aguardando_usuario';
             await (0, database_js_1.query)(`UPDATE chamados SET status = 'aguardando_usuario', updated_at = NOW() WHERE id = $1`, [chamadoId]);
             await (0, database_js_1.query)(`INSERT INTO historico_chamados (chamado_id, usuario_id, acao, descricao, status_anterior, status_novo)
          VALUES ($1, $2, 'solicitacao_informacao', 'Técnico solicitou informações adicionais ao usuário', $3, 'aguardando_usuario')`, [chamadoId, user.id, ticket.status]);
         }
         // 2. Colaborador respondeu e estava em 'aguardando_usuario' -> Retorna automaticamente para 'em_atendimento'
         else if (user.id === ticket.solicitante_id && ticket.status === 'aguardando_usuario') {
+            updatedTicketStatus = 'em_atendimento';
             await (0, database_js_1.query)(`UPDATE chamados SET status = 'em_atendimento', updated_at = NOW() WHERE id = $1`, [chamadoId]);
             await (0, database_js_1.query)(`INSERT INTO historico_chamados (chamado_id, usuario_id, acao, descricao, status_anterior, status_novo)
          VALUES ($1, $2, 'resposta_usuario', 'Colaborador respondeu à solicitação. Retornado para atendimento.', 'aguardando_usuario', 'em_atendimento')`, [chamadoId, user.id]);
             // Notificar o técnico responsável
             if (ticket.tecnico_id) {
                 await (0, database_js_1.query)(`INSERT INTO notificacoes (usuario_id, chamado_id, titulo, mensagem, tipo, link)
-           VALUES ($1, $2, 'Resposta recebida no chamado', 'O colaborador ' || $3 || ' respondeu no chamado ' || $4, 'mensagem_recebida', '/technician/tickets/' || $2)`, [ticket.tecnico_id, chamadoId, user.nome, ticket.protocolo]);
+           VALUES ($1, $2::uuid, 'Resposta recebida no chamado', 'O colaborador ' || $3 || ' respondeu no chamado ' || $4, 'mensagem_recebida', '/technician/tickets/' || $2::text)`, [ticket.tecnico_id, chamadoId, user.nome, ticket.protocolo]);
             }
         }
         // 3. Notificar usuário caso tenha recebido mensagem pública do técnico
         else if (user.id !== ticket.solicitante_id && !isNota) {
             await (0, database_js_1.query)(`INSERT INTO notificacoes (usuario_id, chamado_id, titulo, mensagem, tipo, link)
-         VALUES ($1, $2, 'Nova mensagem no seu chamado', $3 || ' enviou uma resposta no chamado ' || $4, 'mensagem_recebida', '/collaborator/tickets/' || $2)`, [ticket.solicitante_id, chamadoId, user.nome, ticket.protocolo]);
+         VALUES ($1, $2::uuid, 'Nova mensagem no seu chamado', $3 || ' enviou uma resposta no chamado ' || $4, 'mensagem_recebida', '/collaborator/tickets/' || $2::text)`, [ticket.solicitante_id, chamadoId, user.nome, ticket.protocolo]);
         }
         // Transmissão via Socket.IO
         const io = (0, socket_js_1.getSocketIO)();
@@ -117,6 +120,22 @@ async function sendMessage(req, res) {
             else {
                 // Mensagem pública para a sala do chamado
                 io.to(`ticket_${chamadoId}`).emit('new_message', message);
+            }
+            // Notificação global para atualização em tempo real de filas e contadores
+            io.emit('new_message_global', {
+                chamado_id: chamadoId,
+                autor_id: user.id,
+                tecnico_id: ticket.tecnico_id,
+                status: updatedTicketStatus,
+                eh_nota_interna: isNota,
+            });
+            if (updatedTicketStatus !== ticket.status) {
+                io.emit('queue_updated', {
+                    action: 'status_change',
+                    ticketId: chamadoId,
+                    status: updatedTicketStatus,
+                    tecnico_id: ticket.tecnico_id,
+                });
             }
         }
         return res.status(201).json({ message });

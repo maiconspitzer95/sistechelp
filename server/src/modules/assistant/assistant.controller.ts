@@ -98,38 +98,81 @@ export async function askAssistant(req: AuthRequest, res: Response) {
       });
     }
 
-    // 5. Pesquisa na Base de Conhecimento do Sistech Desk
-    const words = qLower.split(/\s+/).filter((w: string) => w.length > 3);
-    if (words.length > 0) {
-      const searchPattern = `%${words[0]}%`;
-      const kbRes = await query(
-        `SELECT titulo, conteudo, resumo
-         FROM base_conhecimento
-         WHERE ativo = true AND (
-           titulo ILIKE $1 OR conteudo ILIKE $1 OR $2 = ANY(palavras_chave)
-         )
-         LIMIT 1`,
-        [searchPattern, words[0]]
-      );
+    // 5. Orientação de Relatório
+    if (qLower.includes('relatório') || qLower.includes('relatorio') || qLower.includes('extração de dados') || qLower.includes('extracao de dados')) {
+      return res.json({
+        reply: "📊 **Como solicitar Relatórios ou Extração de Dados:**\n\n1. Acesse a categoria **\"Relatório\"** no Sistech Desk.\n2. Preencha o **Título do Relatório** e o **Sistema ou Módulo de Origem** (ex.: SISHOS / PEP — Módulo de Internação).\n3. Descreva detalhadamente **o que é necessário para o relatório** e, se houver, os **filtros necessários** (período, setor, convênio, etc.).\n4. O chamado será direcionado imediatamente para a fila da TI!",
+        action: 'open_ticket_relatorio',
+        suggestions: ['Abrir chamado de Relatório', 'Como encontrar o VNC?', 'Consultar meus chamados'],
+      });
+    }
 
-      if (kbRes.rows.length > 0) {
-        const art = kbRes.rows[0];
-        return res.json({
-          reply: `💡 **${art.titulo}**\n\n${art.conteudo}`,
-          suggestions: ['Abrir um chamado de suporte', 'Como encontrar o VNC?', 'Consultar meus chamados'],
-        });
+    // 6. Proposta de Novo Software
+    if (
+      qLower.includes('novo software') ||
+      qLower.includes('novo programa') ||
+      qLower.includes('novo sistema') ||
+      qLower.includes('desenvolver software') ||
+      qLower.includes('automação') ||
+      qLower.includes('automacao')
+    ) {
+      return res.json({
+        reply: "🚀 **Como propor um Novo Software ou Automação:**\n\n1. Selecione a opção **\"Novo Software\"** no Sistech Desk.\n2. Preencha os 3 campos da proposta:\n   • **Descreva o Novo Software:** funcionalidades e problema a resolver;\n   • **Como o Processo Funciona Atualmente:** rotina atual do setor;\n   • **Benefícios Esperados para a Santa Casa:** ganhos de eficiência e tempo.\n3. O chamado será encaminhado para a equipe de desenvolvimento da TI!",
+        action: 'open_ticket_novo_software',
+        suggestions: ['Abrir chamado de Novo Software', 'Como encontrar o VNC?', 'Consultar meus chamados'],
+      });
+    }
+
+    // 7. Pesquisa na Base de Conhecimento do Sistech Desk
+    const kbExact = await query(
+      `SELECT titulo, conteudo, resumo
+       FROM base_conhecimento
+       WHERE ativo = true AND (
+         titulo ILIKE $1 OR conteudo ILIKE $1 OR resumo ILIKE $1
+       )
+       LIMIT 1`,
+      [`%${qLower}%`]
+    );
+
+    let art = kbExact.rows[0];
+
+    if (!art) {
+      const words = qLower.split(/\s+/).filter((w: string) => w.length > 2);
+      for (const w of words) {
+        if (['como', 'para', 'onde', 'qual', 'quando', 'fazer', 'esta', 'está', 'tenho', 'pode'].includes(w)) continue;
+        const wRes = await query(
+          `SELECT titulo, conteudo, resumo
+           FROM base_conhecimento
+           WHERE ativo = true AND (
+             titulo ILIKE $1 OR conteudo ILIKE $1 OR $2 = ANY(palavras_chave)
+           )
+           LIMIT 1`,
+          [`%${w}%`, w]
+        );
+        if (wRes.rows.length > 0) {
+          art = wRes.rows[0];
+          break;
+        }
       }
     }
 
-    // 6. Resposta padrão inteligente com sugestões
+    if (art) {
+      return res.json({
+        reply: `💡 **${art.titulo}**\n\n${art.conteudo}`,
+        suggestions: ['Abrir um chamado de suporte', 'Como encontrar o VNC?', 'Consultar meus chamados'],
+      });
+    }
+
+    // 8. Resposta padrão inteligente com sugestões
     return res.json({
-      reply: `Não encontrei uma resposta exata para a sua dúvida na minha base de conhecimento, mas a equipe de TI da Santa Casa de Pelotas está pronta para te atender!\n\nVocê gostaria de abrir um chamado agora? É rápido e você poderá conversar diretamente com um técnico pelo chat.`,
+      reply: "Não encontrei uma resposta exata para a sua dúvida na minha base de conhecimento, mas a equipe de TI da Santa Casa de Pelotas está pronta para te atender!\n\nVocê gostaria de abrir um chamado agora? É rápido e você poderá conversar diretamente com um técnico pelo chat.",
       action: 'open_ticket',
       suggestions: [
         'Abrir chamado de Software',
         'Abrir chamado de Hardware e Rede',
         'Solicitar Login de acesso',
-        'Como encontrar o VNC?',
+        'Solicitar Relatório',
+        'Propor Novo Software',
       ],
     });
   } catch (error) {

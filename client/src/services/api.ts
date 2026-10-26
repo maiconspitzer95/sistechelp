@@ -55,6 +55,9 @@ export const api = {
   getCategories: () => apiRequest('/tickets/categories'),
   getCategoryBySlug: (slug: string) => apiRequest(`/tickets/categories/${slug}`),
   getTickets: (queryString = '') => apiRequest(`/tickets${queryString}`),
+  getQueueStats: () => apiRequest('/tickets/queue-stats'),
+  getMyAssignedStats: () => apiRequest('/tickets/my-stats'),
+  getMyAssignedTickets: (queryString = '') => apiRequest(`/tickets/my-assigned${queryString}`),
   getTicket: (id: string) => apiRequest(`/tickets/${id}`),
   createTicket: (data: any) => apiRequest('/tickets', { method: 'POST', body: JSON.stringify(data) }),
   assignTicket: (id: string, data: { tecnico_id?: string; motivo?: string }) =>

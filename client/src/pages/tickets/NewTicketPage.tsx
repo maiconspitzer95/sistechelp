@@ -10,7 +10,6 @@ import {
   FileSpreadsheet,
   Code,
   ArrowLeft,
-  CheckCircle2,
   AlertCircle,
   Plus,
   Trash2,
@@ -92,22 +91,132 @@ export const NewTicketPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!titulo.trim() || !descricao.trim()) {
-      setError('Por favor, informe o título e a descrição do problema');
-      return;
+
+    let finalTitulo = titulo.trim();
+    let finalDescricao = descricao.trim();
+
+    if (selectedCatSlug === 'solicitar-login') {
+      if (colaboradoresLogin.length === 0) {
+        setError('Por favor, adicione ao menos um colaborador.');
+        return;
+      }
+
+      for (let i = 0; i < colaboradoresLogin.length; i++) {
+        const c = colaboradoresLogin[i];
+        if (!c.nome.trim() || !c.re.trim() || !c.setor.trim()) {
+          setError(`Por favor, preencha o Nome Completo, R.E. e Setor do colaborador #${i + 1}.`);
+          return;
+        }
+      }
+
+      // Geração automática do título conforme especificação:
+      // 1 colaborador: "Solicitação de Login — João Silva"
+      // Vários: "Solicitação de Login — 3 colaboradores"
+      if (colaboradoresLogin.length === 1) {
+        finalTitulo = `Solicitação de Login — ${colaboradoresLogin[0].nome.trim()}`;
+      } else {
+        finalTitulo = `Solicitação de Login — ${colaboradoresLogin.length} colaboradores`;
+      }
+
+      // Geração automática da descrição / resumo para a equipe de TI
+      const descLinhas = [
+        'Solicitação de liberação de login e acessos aos sistemas:',
+        ...colaboradoresLogin.map(
+          (c, idx) =>
+            `• Colaborador ${idx + 1}: ${c.nome.trim()} (R.E.: ${c.re.trim()}) — Setor: ${c.setor.trim()}${
+              c.cargo.trim() ? ` — Cargo: ${c.cargo.trim()}` : ''
+            }`
+        ),
+      ];
+      finalDescricao = descLinhas.join('\n');
+    } else if (selectedCatSlug === 'relatorio') {
+      const titRel = (formAnswers.titulo_relatorio || '').trim();
+      const sistOrig = (formAnswers.sistema_origem || '').trim();
+      const necess = (formAnswers.necessidades_relatorio || '').trim();
+      const filtros = (formAnswers.filtros_necessarios || '').trim();
+
+      if (!titRel) {
+        setError('Por favor, informe o Título do Relatório.');
+        return;
+      }
+      if (!sistOrig) {
+        setError('Por favor, informe o Sistema ou Módulo de Origem dos Dados.');
+        return;
+      }
+      if (!necess) {
+        setError('Por favor, descreva o que é necessário para o relatório.');
+        return;
+      }
+
+      // Preenchimento automático do título com o Título do Relatório
+      finalTitulo = titRel;
+
+      // Descrição interna gerada a partir das especificações
+      finalDescricao = [
+        'ESPECIFICAÇÕES DO RELATÓRIO',
+        `• Título do Relatório: ${titRel}`,
+        `• Sistema ou Módulo de Origem dos Dados: ${sistOrig}`,
+        '',
+        'O que é necessário para o relatório:',
+        necess,
+        '',
+        'Filtros Necessários:',
+        filtros || 'Nenhum filtro específico informado',
+      ].join('\n');
+    } else if (selectedCatSlug === 'novo-programa') {
+      const descSw = (formAnswers.descreva_software || '').trim();
+      const procAt = (formAnswers.processo_atual || '').trim();
+      const benef = (formAnswers.beneficios_esperados || '').trim();
+
+      if (!descSw) {
+        setError('Por favor, descreva o Novo Software.');
+        return;
+      }
+      if (!procAt) {
+        setError('Por favor, explique como o processo funciona atualmente.');
+        return;
+      }
+      if (!benef) {
+        setError('Por favor, descreva os benefícios esperados para a Santa Casa.');
+        return;
+      }
+
+      const cleanProposta = descSw.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
+      const resumo = cleanProposta.length > 60 ? cleanProposta.substring(0, 57).trim() + '...' : cleanProposta;
+      finalTitulo = `Solicitação de Novo Software — ${resumo || 'Nova Proposta'}`;
+
+      finalDescricao = [
+        'PROPOSTA DE NOVO SOFTWARE',
+        '',
+        'Descreva o Novo Software:',
+        descSw,
+        '',
+        'Como o Processo Funciona Atualmente:',
+        procAt,
+        '',
+        'Benefícios Esperados para a Santa Casa:',
+        benef,
+      ].join('\n');
+    } else {
+      if (!finalTitulo || !finalDescricao) {
+        setError('Por favor, informe o título e a descrição do problema');
+        return;
+      }
     }
 
     try {
       setSubmitting(true);
       setError(null);
 
+      const isNoVnc = ['solicitar-login', 'relatorio', 'novo-programa'].includes(selectedCatSlug);
+
       const payload = {
         categoria_id: currentCategory.id,
-        setor_solicitante_id: setorId || null,
-        titulo: titulo.trim(),
-        descricao: descricao.trim(),
-        prioridade,
-        vnc_ou_ip: vncOuIp.trim() || null,
+        setor_solicitante_id: setorId || user?.setor_id || null,
+        titulo: finalTitulo,
+        descricao: finalDescricao,
+        prioridade: (selectedCatSlug === 'relatorio' || selectedCatSlug === 'novo-programa') ? 'media' : prioridade,
+        vnc_ou_ip: isNoVnc ? null : (vncOuIp.trim() || null),
         respostas: formAnswers,
         colaboradores_acesso: selectedCatSlug === 'solicitar-login' ? colaboradoresLogin : [],
       };
@@ -169,6 +278,7 @@ export const NewTicketPage: React.FC = () => {
             onClick={() => {
               setSelectedCatSlug(c.slug);
               setFormAnswers({});
+              setError(null);
             }}
             className={`p-3 rounded-2xl border text-left transition flex flex-col items-start justify-between ${
               selectedCatSlug === c.slug
@@ -208,87 +318,100 @@ export const NewTicketPage: React.FC = () => {
           <p className="text-xs text-slate-500 mt-1">{currentCategory?.descricao}</p>
         </div>
 
-        {/* Campos Comuns: Setor, VNC e Prioridade */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-              Setor / Unidade Solicitante *
-            </label>
-            <select
-              value={setorId}
-              onChange={(e) => setSetorId(e.target.value)}
-              required
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white"
-            >
-              <option value="">Selecione o setor...</option>
-              {sectors.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.nome} ({s.sigla})
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* ========================================================================= */}
+        {/* CAMPOS COMUNS: Setor, VNC e Prioridade (Apenas para Software, Hardware e Login) */}
+        {/* ========================================================================= */}
+        {selectedCatSlug !== 'relatorio' && selectedCatSlug !== 'novo-programa' && (
+          <div
+            className={`grid grid-cols-1 ${
+              selectedCatSlug === 'solicitar-login' ? 'sm:grid-cols-2' : 'sm:grid-cols-3'
+            } gap-4`}
+          >
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Setor / Unidade Solicitante *
+              </label>
+              <select
+                value={setorId}
+                onChange={(e) => setSetorId(e.target.value)}
+                required
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white"
+              >
+                <option value="">Selecione o setor...</option>
+                {sectors.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.nome} ({s.sigla})
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-              VNC ou Identificação do PC
-            </label>
-            <input
-              type="text"
-              value={vncOuIp}
-              onChange={(e) => setVncOuIp(e.target.value)}
-              placeholder="Ex: 10.0.14.32 ou TI-BC-01"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white"
-            />
-          </div>
+            {/* VNC não aparece em Solicitar Login */}
+            {selectedCatSlug !== 'solicitar-login' && (
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  VNC ou Identificação do PC
+                </label>
+                <input
+                  type="text"
+                  value={vncOuIp}
+                  onChange={(e) => setVncOuIp(e.target.value)}
+                  placeholder="Ex: 10.0.14.32 ou TI-BC-01"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white"
+                />
+              </div>
+            )}
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-              Prioridade Sugerida
-            </label>
-            <select
-              value={prioridade}
-              onChange={(e) => setPrioridade(e.target.value as any)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white"
-            >
-              <option value="baixa">Baixa (Dúvidas ou rotina)</option>
-              <option value="media">Média (Atendimento padrão)</option>
-              <option value="alta">Alta (Impacto no setor)</option>
-              <option value="urgente">Urgente (Parada crítica assistencial)</option>
-            </select>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Prioridade Sugerida
+              </label>
+              <select
+                value={prioridade}
+                onChange={(e) => setPrioridade(e.target.value as any)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white"
+              >
+                <option value="baixa">Baixa (Dúvidas ou rotina)</option>
+                <option value="media">Média (Atendimento padrão)</option>
+                <option value="alta">Alta (Impacto no setor)</option>
+                <option value="urgente">Urgente (Parada crítica assistencial)</option>
+              </select>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Título e Resumo Geral */}
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-              Título do Chamado *
-            </label>
-            <input
-              type="text"
-              value={titulo}
-              onChange={(e) => setTitulo(e.target.value)}
-              placeholder="Ex: Impressora de etiquetas não responde no Bloco Cirúrgico"
-              required
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-medium focus:ring-2 focus:ring-blue-600 focus:bg-white"
-            />
-          </div>
+        {/* Título e Resumo Geral — Omitidos nas categorias Solicitar Login, Relatório e Novo Software */}
+        {selectedCatSlug !== 'solicitar-login' && selectedCatSlug !== 'relatorio' && selectedCatSlug !== 'novo-programa' && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Título do Chamado *
+              </label>
+              <input
+                type="text"
+                value={titulo}
+                onChange={(e) => setTitulo(e.target.value)}
+                placeholder="Ex: Impressora de etiquetas não responde no Bloco Cirúrgico"
+                required
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-medium focus:ring-2 focus:ring-blue-600 focus:bg-white"
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-              Descrição Detalhada do Problema *
-            </label>
-            <textarea
-              rows={3}
-              value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-              placeholder="Descreva detalhadamente o que está ocorrendo, horário de início e pessoas afetadas..."
-              required
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white"
-            />
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Descrição Detalhada do Problema *
+              </label>
+              <textarea
+                rows={3}
+                value={descricao}
+                onChange={(e) => setDescricao(e.target.value)}
+                placeholder="Descreva detalhadamente o que está ocorrendo, horário de início e pessoas afetadas..."
+                required
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* ========================================================================= */}
         {/* CAMPOS ESPECÍFICOS: 1. SOFTWARE */}
@@ -296,17 +419,19 @@ export const NewTicketPage: React.FC = () => {
         {selectedCatSlug === 'software' && (
           <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 space-y-4">
             <h3 className="text-xs font-bold text-blue-900 uppercase tracking-wider">
-              Detalhes de Software & Sistemas Hospitalares
+              QUAL SISTEMA OU MÓDULO APRESENTA PROBLEMAS?
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Sistema com Problema *
+                  Sistema com Problema
                 </label>
                 <select
+                  value={formAnswers.sistema_problema || ''}
                   onChange={(e) => handleFieldChange('sistema_problema', e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs"
                 >
+                  <option value="">Selecione o sistema (opcional)...</option>
                   <option value="SISHOS / PEP">SISHOS / PEP</option>
                   <option value="PEP Enfermagem">PEP Enfermagem</option>
                   <option value="Prontuário Eletrônico">Prontuário Eletrônico</option>
@@ -323,6 +448,7 @@ export const NewTicketPage: React.FC = () => {
                 <input
                   type="text"
                   placeholder="Ex: Erro 1005: Registro bloqueado por outro usuário"
+                  value={formAnswers.mensagem_erro || ''}
                   onChange={(e) => handleFieldChange('mensagem_erro', e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs"
                 />
@@ -339,15 +465,17 @@ export const NewTicketPage: React.FC = () => {
             <h3 className="text-xs font-bold text-cyan-900 uppercase tracking-wider">
               Detalhes do Equipamento / Infraestrutura
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Tipo de Equipamento ou Serviço *
                 </label>
                 <select
+                  value={formAnswers.tipo_equipamento || ''}
                   onChange={(e) => handleFieldChange('tipo_equipamento', e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs"
                 >
+                  <option value="">Selecione o tipo de equipamento...</option>
                   <option value="Impressora Laser / Térmica">Impressora Laser / Térmica</option>
                   <option value="Computador / Monitor">Computador / Monitor</option>
                   <option value="Ponto de Rede / Sem Internet">Ponto de Rede / Sem Internet</option>
@@ -359,23 +487,12 @@ export const NewTicketPage: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Identificação / Patrimônio
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ex: PAT-01492 ou Zebra Posto 3"
-                  onChange={(e) => handleFieldChange('identificacao_equipamento', e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Localização Exata na Unidade
                 </label>
                 <input
                   type="text"
                   placeholder="Ex: Balcão central ao lado do leito 4"
+                  value={formAnswers.localizacao_exata || ''}
                   onChange={(e) => handleFieldChange('localizacao_exata', e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs"
                 />
@@ -385,7 +502,7 @@ export const NewTicketPage: React.FC = () => {
         )}
 
         {/* ========================================================================= */}
-        {/* CAMPOS ESPECÍFICOS: 3. SOLICITAR LOGIN (MÚLTIPLOS COLABORADORES!) */}
+        {/* CAMPOS ESPECÍFICOS: 3. SOLICITAR LOGIN (MÚLTIPLOS COLABORADORES) */}
         {/* ========================================================================= */}
         {selectedCatSlug === 'solicitar-login' && (
           <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 space-y-4">
@@ -463,88 +580,150 @@ export const NewTicketPage: React.FC = () => {
         )}
 
         {/* ========================================================================= */}
-        {/* CAMPOS ESPECÍFICOS: 4. RELATÓRIO */}
+        {/* CAMPOS ESPECÍFICOS: 4. RELATÓRIO (SIMPLIFICADO — APENAS SEÇÃO PRINCIPAL) */}
         {/* ========================================================================= */}
         {selectedCatSlug === 'relatorio' && (
-          <div className="p-4 bg-amber-50/50 rounded-2xl border border-amber-100 space-y-4">
-            <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wider">
-              Especificações do Relatório
-            </h3>
+          <div className="p-5 sm:p-6 bg-amber-50/50 rounded-3xl border border-amber-200/80 shadow-xs space-y-5">
+            <div className="border-b border-amber-200/60 pb-3">
+              <h3 className="text-xs font-bold text-amber-950 uppercase tracking-wider">
+                ESPECIFICAÇÕES DO RELATÓRIO
+              </h3>
+              <p className="text-[11px] text-amber-800/80 mt-0.5">
+                Preencha os detalhes e necessidades para que a equipe de TI extraia os dados com precisão.
+              </p>
+            </div>
+
+            {/* Primeira linha: Título do Relatório e Sistema / Módulo de Origem dos Dados */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Formato Desejado *
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Título do Relatório *
                 </label>
-                <select
-                  onChange={(e) => handleFieldChange('formato_desejado', e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs"
-                >
-                  <option value="Planilha Excel (.xlsx)">Planilha Excel (.xlsx)</option>
-                  <option value="Relatório em PDF">Relatório em PDF</option>
-                  <option value="Dashboard / Painel Web">Dashboard / Painel Web</option>
-                  <option value="Direto na tela do sistema">Direto na tela do sistema</option>
-                </select>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: Relatório de Atendimentos por Convênio"
+                  value={formAnswers.titulo_relatorio || ''}
+                  onChange={(e) => handleFieldChange('titulo_relatorio', e.target.value)}
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:bg-white"
+                />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Sistema de Origem dos Dados
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Sistema ou Módulo de Origem dos Dados *
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: SISHOS tela de internação e faturamento"
+                  required
+                  list="sistemas-origem-list"
+                  placeholder="Ex: SISHOS / PEP — Módulo de Internação"
+                  value={formAnswers.sistema_origem || ''}
                   onChange={(e) => handleFieldChange('sistema_origem', e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-medium focus:ring-2 focus:ring-amber-500 focus:bg-white"
                 />
+                <datalist id="sistemas-origem-list">
+                  <option value="SISHOS / PEP — Módulo de Internação" />
+                  <option value="SISHOS / PEP — Ambulatório e Consultórios" />
+                  <option value="SISHOS / PEP — Faturamento e Convênios" />
+                  <option value="PEP Enfermagem — Censo e Evoluções" />
+                  <option value="Prontuário Eletrônico do Paciente" />
+                  <option value="Laboratório / PACS / Imagens" />
+                  <option value="Farmácia / Estoque Central" />
+                  <option value="Financeiro / Contabilidade" />
+                  <option value="Recursos Humanos / Departamento Pessoal" />
+                </datalist>
               </div>
+            </div>
 
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Filtros Necessários (Período, Setor, Convênio, Médico)
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ex: Intervalo de datas de admissão, setor de UTI e convênio IPE"
-                  onChange={(e) => handleFieldChange('filtros_necessarios', e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs"
-                />
-              </div>
+            {/* Segunda linha: O que é necessário para o relatório? (largura total) */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                O que é necessário para o relatório? *
+              </label>
+              <textarea
+                rows={4}
+                required
+                placeholder="Descreva quais informações devem aparecer no relatório. Ex.: número do atendimento, nome do paciente, data, setor, convênio, profissional responsável, valores, totais..."
+                value={formAnswers.necessidades_relatorio || ''}
+                onChange={(e) => handleFieldChange('necessidades_relatorio', e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs leading-relaxed focus:ring-2 focus:ring-amber-500 focus:bg-white"
+              />
+            </div>
+
+            {/* Terceira linha: Filtros Necessários (largura total) */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Filtros Necessários
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Ex.: Período inicial e final, setor, convênio, médico, tipo de atendimento, situação..."
+                value={formAnswers.filtros_necessarios || ''}
+                onChange={(e) => handleFieldChange('filtros_necessarios', e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs leading-relaxed focus:ring-2 focus:ring-amber-500 focus:bg-white"
+              />
             </div>
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* CAMPOS ESPECÍFICOS: 5. NOVO PROGRAMA */}
+        {/* CAMPOS ESPECÍFICOS: 5. NOVO SOFTWARE (SIMPLIFICADO — APENAS SEÇÃO PRINCIPAL) */}
         {/* ========================================================================= */}
         {selectedCatSlug === 'novo-programa' && (
-          <div className="p-4 bg-purple-50/50 rounded-2xl border border-purple-100 space-y-4">
-            <h3 className="text-xs font-bold text-purple-900 uppercase tracking-wider">
-              Proposta de Novo Software ou Automação
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Como o processo funciona atualmente?
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Usa papéis impressos, mensagens de WhatsApp, pastas de planilhas..."
-                  onChange={(e) => handleFieldChange('processo_atual', e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs"
-                />
-              </div>
+          <div className="p-5 sm:p-6 bg-purple-50/50 rounded-3xl border border-purple-200/80 shadow-xs space-y-5">
+            <div className="border-b border-purple-200/60 pb-3">
+              <h3 className="text-xs font-bold text-purple-950 uppercase tracking-wider">
+                PROPOSTA DE NOVO SOFTWARE
+              </h3>
+              <p className="text-[11px] text-purple-800/80 mt-0.5">
+                Descreva sua ideia de desenvolvimento ou automação para a equipe de tecnologia avaliar.
+              </p>
+            </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Benefícios esperados para a Santa Casa
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Economia de tempo da equipe, segurança do paciente, redução de custos..."
-                  onChange={(e) => handleFieldChange('beneficios_esperados', e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs"
-                />
-              </div>
+            {/* 1. Descreva o Novo Software */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Descreva o Novo Software *
+              </label>
+              <textarea
+                rows={4}
+                required
+                placeholder="Descreva o software que deseja desenvolver, sua finalidade, quais funcionalidades deverá possuir e qual problema pretende resolver."
+                value={formAnswers.descreva_software || ''}
+                onChange={(e) => handleFieldChange('descreva_software', e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs leading-relaxed focus:ring-2 focus:ring-purple-500 focus:bg-white"
+              />
+            </div>
+
+            {/* 2. Como o Processo Funciona Atualmente? */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Como o Processo Funciona Atualmente? *
+              </label>
+              <textarea
+                rows={3}
+                required
+                placeholder="Explique como essa atividade é realizada hoje. Ex.: planilhas de Excel, formulários impressos, controles manuais, mensagens ou sistemas existentes."
+                value={formAnswers.processo_atual || ''}
+                onChange={(e) => handleFieldChange('processo_atual', e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs leading-relaxed focus:ring-2 focus:ring-purple-500 focus:bg-white"
+              />
+            </div>
+
+            {/* 3. Benefícios Esperados para a Santa Casa */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                Benefícios Esperados para a Santa Casa *
+              </label>
+              <textarea
+                rows={3}
+                required
+                placeholder="Descreva os benefícios esperados. Ex.: redução de retrabalho, economia de tempo, melhoria dos processos, segurança das informações e maior eficiência."
+                value={formAnswers.beneficios_esperados || ''}
+                onChange={(e) => handleFieldChange('beneficios_esperados', e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs leading-relaxed focus:ring-2 focus:ring-purple-500 focus:bg-white"
+              />
             </div>
           </div>
         )}

@@ -12,9 +12,18 @@ import {
   Eye,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const KnowledgeBasePage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isTechOrAdmin = user?.pode_atender || ['master', 'gestor', 'tecnico'].includes(user?.perfil_codigo || '');
+
+  useEffect(() => {
+    if (user && !isTechOrAdmin) {
+      navigate('/collaborator', { replace: true });
+    }
+  }, [user, isTechOrAdmin, navigate]);
   const [articles, setArticles] = useState<KnowledgeArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

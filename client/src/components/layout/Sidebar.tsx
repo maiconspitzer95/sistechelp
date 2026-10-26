@@ -69,10 +69,6 @@ export const Sidebar: React.FC = () => {
               <Inbox className="w-4 h-4 text-amber-400" />
               <span>Meus Chamados</span>
             </NavLink>
-            <NavLink to="/knowledge" className={linkClass}>
-              <BookOpen className="w-4 h-4 text-purple-400" />
-              <span>Base de Conhecimento</span>
-            </NavLink>
           </nav>
         </div>
 
@@ -94,6 +90,10 @@ export const Sidebar: React.FC = () => {
               <NavLink to="/technician/dashboard" className={linkClass}>
                 <BarChart3 className="w-4 h-4 text-emerald-400" />
                 <span>Produtividade & SLAs</span>
+              </NavLink>
+              <NavLink to="/knowledge" className={linkClass}>
+                <BookOpen className="w-4 h-4 text-purple-400" />
+                <span>Base de Conhecimento</span>
               </NavLink>
             </nav>
           </div>

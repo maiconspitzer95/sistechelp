@@ -10,6 +10,7 @@ import { CollaboratorTicketsPage } from './pages/collaborator/CollaboratorTicket
 import { NewTicketPage } from './pages/tickets/NewTicketPage';
 import { TicketDetailPage } from './pages/tickets/TicketDetailPage';
 import { TechnicianQueuePage } from './pages/technician/TechnicianQueuePage';
+import { MyTicketsPage } from './pages/technician/MyTicketsPage';
 import { DashboardMetricsPage } from './pages/dashboard/DashboardMetricsPage';
 import { UsersManagementPage } from './pages/admin/UsersManagementPage';
 import { SectorsManagementPage } from './pages/admin/SectorsManagementPage';
@@ -66,7 +67,7 @@ export function App() {
 
             {/* Painel Técnico */}
             <Route path="technician" element={<TechnicianQueuePage />} />
-            <Route path="technician/my-tickets" element={<TechnicianQueuePage />} />
+            <Route path="technician/my-tickets" element={<MyTicketsPage />} />
             <Route path="technician/tickets/:id" element={<TicketDetailPage />} />
             <Route path="technician/dashboard" element={<DashboardMetricsPage />} />
             <Route path="technician/reports" element={<DashboardMetricsPage />} />

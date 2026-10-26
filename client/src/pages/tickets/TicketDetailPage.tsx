@@ -20,6 +20,26 @@ import {
   Sparkles,
 } from 'lucide-react';
 
+const fieldLabels: Record<string, string> = {
+  titulo_relatorio: 'Título do Relatório',
+  sistema_origem: 'Sistema / Módulo de Origem',
+  necessidades_relatorio: 'O que é necessário para o relatório',
+  filtros_necessarios: 'Filtros Necessários',
+  descreva_software: 'Descrição do Novo Software',
+  processo_atual: 'Como o processo funciona atualmente',
+  beneficios_esperados: 'Benefícios esperados para a Santa Casa',
+  sistema_problema: 'Sistema com Problema',
+  mensagem_erro: 'Mensagem de Erro',
+  tipo_equipamento: 'Tipo de Equipamento ou Serviço',
+  localizacao_exata: 'Localização Exata na Unidade',
+  nome_relatorio: 'Nome do Relatório',
+  objetivo: 'Objetivo da Análise',
+  formato_desejado: 'Formato Desejado',
+  nome_sugerido: 'Nome Sugerido',
+  problema_resolver: 'Problema a Resolver',
+  setores_envolvidos: 'Setores Envolvidos',
+};
+
 export const TicketDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -518,15 +538,17 @@ export const TicketDetailPage: React.FC = () => {
           {ticket.formulario_dados && Object.keys(ticket.formulario_dados).length > 0 && (
             <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm p-5 space-y-3">
               <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Respostas do Formulário
+                Especificações do Chamado
               </h3>
-              <div className="space-y-2 text-xs">
+              <div className="space-y-3 text-xs">
                 {Object.entries(ticket.formulario_dados).map(([key, val]) => (
-                  <div key={key} className="border-b border-slate-100 pb-1.5 last:border-0">
-                    <span className="text-slate-400 block text-[10px] uppercase">
-                      {key.replace(/_/g, ' ')}
+                  <div key={key} className="border-b border-slate-100 pb-2 last:border-0">
+                    <span className="text-slate-400 block text-[10px] font-semibold uppercase">
+                      {fieldLabels[key] || key.replace(/_/g, ' ')}
                     </span>
-                    <span className="font-medium text-slate-700">{String(val)}</span>
+                    <span className="font-medium text-slate-800 whitespace-pre-line block mt-0.5 bg-slate-50/60 p-2 rounded-lg border border-slate-100/80">
+                      {String(val || '—')}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -544,7 +566,7 @@ export const TicketDetailPage: React.FC = () => {
                   <div key={i} className="p-2 bg-emerald-50/50 rounded-xl border border-emerald-100 text-xs">
                     <div className="font-bold text-slate-800">{c.nome}</div>
                     <div className="text-[11px] text-slate-500">
-                      R.E.: {c.re} • Setor: {c.setor}
+                      R.E.: {c.re} • Setor: {c.setor}{c.cargo ? ' • Cargo: ' + c.cargo : ''}
                     </div>
                   </div>
                 ))}
