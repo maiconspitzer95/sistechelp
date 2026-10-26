@@ -34,11 +34,11 @@ export const Navbar: React.FC = () => {
 
   const demoUsers = [
     { label: 'Marina Santos (Colaboradora)', username: 'marina.santos', role: 'Bloco Cirúrgico' },
-    { label: 'Carlos Mendes (Técnico TI)', username: 'carlos.mendes', role: 'Suporte N1' },
-    { label: 'Lucas Ferreira (Técnico TI)', username: 'lucas.ferreira', role: 'Redes & Infra' },
-    { label: 'Fernanda Alves (Técnica TI)', username: 'fernanda.alves', role: 'Sistemas & BD' },
-    { label: 'Gestor de TI', username: 'gestor.ti', role: 'Coordenação' },
-    { label: 'Administrador Master', username: 'master.admin', role: 'Acesso Geral' },
+    { label: 'Maicon Spitzer (Técnico TI)', username: 'maiconspitzer', role: 'Analista TI' },
+    { label: 'Gabriel Lang (Gestor de TI)', username: 'gabriel', role: 'Gerente de T.I' },
+    { label: 'Rafael Pereira (Técnico TI)', username: 'rafael', role: 'Redes & Infra' },
+    { label: 'Cristian Almeirda (Técnico TI)', username: 'cristian', role: 'Analista de Redes' },
+    { label: 'Administrador Master', username: 'master.admin', role: 'Coordenador Geral' },
   ];
 
   return (

@@ -144,10 +144,10 @@ Todas as contas utilizam a senha padrão de desenvolvimento: **`sistech123`**
 | Perfil | Nome | Login | R.E. | Setor |
 | :--- | :--- | :--- | :--- | :--- |
 | **Colaboradora** | Marina Santos | `marina.santos` | `00010` | Bloco Cirúrgico |
-| **Técnico TI** | Carlos Mendes | `carlos.mendes` | `00003` | Tecnologia da Informação |
-| **Técnico TI** | Lucas Ferreira | `lucas.ferreira` | `00004` | Infraestrutura & Redes |
-| **Técnica TI** | Fernanda Alves | `fernanda.alves` | `00005` | Sistemas & Banco de Dados |
-| **Gestor TI** | Gestor de TI | `gestor.ti` | `00002` | Coordenação de TI |
+| **Técnico TI** | Maicon Spitzer | `maiconspitzer` | `10974` | Tecnologia da Informação |
+| **Gestor TI** | Gabriel Lang | `gabriel` | `00002` | Tecnologia da Informação |
+| **Técnico TI** | Rafael Pereira | `rafael` | `00004` | Tecnologia da Informação |
+| **Técnico TI** | Cristian Almeirda | `cristian` | `00005` | Tecnologia da Informação |
 | **Master** | Administrador Master | `master.admin` | `00001` | TI Santa Casa |
 
 > **Dica**: No cabeçalho da aplicação existe o botão **"Alternar Usuário Demo"**, que permite trocar de perfil instantaneamente com 1 clique para testar todo o fluxo.

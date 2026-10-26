@@ -97,44 +97,44 @@ export async function runSeeds() {
       cargo: 'Coordenador Geral de Sistemas',
     },
     {
-      nome: 'Gestor de TI',
+      nome: 'Gabriel Lang',
       re: '00002',
-      login: 'gestor.ti',
-      email: 'gestor.ti@santacasadepelotas.com.br',
+      login: 'gabriel',
+      email: 'gabriel@santacasadepelotas.com.br',
       perfil: 'gestor',
       setor: 'TI',
       pode_atender: true,
-      cargo: 'Gestor de Atendimento e Suporte',
+      cargo: 'Gerente de T.I',
     },
     {
-      nome: 'Carlos Mendes',
-      re: '00003',
-      login: 'carlos.mendes',
-      email: 'carlos.mendes@santacasadepelotas.com.br',
+      nome: 'Maicon Spitzer',
+      re: '10974',
+      login: 'maiconspitzer',
+      email: 'maiconspitzer@santacasadepelotas.com.br',
       perfil: 'tecnico',
       setor: 'TI',
       pode_atender: true,
-      cargo: 'Analista de Suporte de TI',
+      cargo: 'Analista TI',
     },
     {
-      nome: 'Lucas Ferreira',
+      nome: 'Rafael Pereira',
       re: '00004',
-      login: 'lucas.ferreira',
-      email: 'lucas.ferreira@santacasadepelotas.com.br',
+      login: 'rafael',
+      email: 'rafael@santacasadepelotas.com.br',
       perfil: 'tecnico',
       setor: 'TI',
       pode_atender: true,
       cargo: 'Técnico de Redes e Infraestrutura',
     },
     {
-      nome: 'Fernanda Alves',
+      nome: 'Cristian Almeirda',
       re: '00005',
-      login: 'fernanda.alves',
-      email: 'fernanda.alves@santacasadepelotas.com.br',
+      login: 'cristian',
+      email: 'cristian@santacasadepelotas.com.br',
       perfil: 'tecnico',
       setor: 'TI',
       pode_atender: true,
-      cargo: 'Analista de Sistemas e Banco de Dados',
+      cargo: 'Analista de Redes',
     },
     {
       nome: 'Marina Santos',
@@ -366,12 +366,12 @@ Acompanhe sempre o histórico e mensagens dentro do chamado.`,
 
   // 7. Chamados Fictícios para Demonstração Completa
   const marinaId = (await query("SELECT id FROM usuarios WHERE login = 'marina.santos'")).rows[0]?.id;
-  const carlosId = (await query("SELECT id FROM usuarios WHERE login = 'carlos.mendes'")).rows[0]?.id;
+  const maiconId = (await query("SELECT id FROM usuarios WHERE login = 'maiconspitzer'")).rows[0]?.id;
   const catHardwareId = (await query("SELECT id FROM categorias WHERE slug = 'hardware-rede'")).rows[0]?.id;
   const catSoftwareId = (await query("SELECT id FROM categorias WHERE slug = 'software'")).rows[0]?.id;
   const blocoCirurgicoId = setorMap['BLOCO_CIRURGICO'];
 
-  if (marinaId && carlosId && catHardwareId) {
+  if (marinaId && maiconId && catHardwareId) {
     // Chamado 1: Impressora da Marina (Diálogo oficial solicitado na especificação!)
     const chamado1Res = await query(
       `INSERT INTO chamados (
@@ -384,7 +384,7 @@ Acompanhe sempre o histórico e mensagens dentro do chamado.`,
         '10.0.14.32'
       ) ON CONFLICT (protocolo) DO UPDATE SET titulo = EXCLUDED.titulo
       RETURNING id`,
-      [catHardwareId, blocoCirurgicoId, tiSetorId, marinaId, carlosId]
+      [catHardwareId, blocoCirurgicoId, tiSetorId, marinaId, maiconId]
     );
 
     const chamado1Id = chamado1Res.rows[0].id;
@@ -406,15 +406,15 @@ Acompanhe sempre o histórico e mensagens dentro do chamado.`,
 
     // Diálogo exato solicitado no item 9 do Prompt:
     // Marina: "A impressora não está funcionando."
-    // Carlos: "Bom dia! Você consegue verificar se aparece alguma luz vermelha?"
+    // Maicon: "Bom dia! Você consegue verificar se aparece alguma luz vermelha?"
     // Marina: "Sim, a luz vermelha está piscando."
-    // Carlos: "Obrigado. Vou verificar o equipamento."
+    // Maicon: "Obrigado. Vou verificar o equipamento."
     const msgs = [
       { autor: marinaId, texto: 'A impressora não está funcionando.', nota: false, tipo: 'texto' },
-      { autor: carlosId, texto: 'Bom dia! Você consegue verificar se aparece alguma luz vermelha?', nota: false, tipo: 'texto' },
+      { autor: maiconId, texto: 'Bom dia! Você consegue verificar se aparece alguma luz vermelha?', nota: false, tipo: 'texto' },
       { autor: marinaId, texto: 'Sim, a luz vermelha está piscando.', nota: false, tipo: 'texto' },
-      { autor: carlosId, texto: 'Obrigado. Vou verificar o equipamento.', nota: false, tipo: 'texto' },
-      { autor: carlosId, texto: 'Nota interna: Testar reposição do rolete e recalibração do sensor de mídia no local.', nota: true, tipo: 'texto' },
+      { autor: maiconId, texto: 'Obrigado. Vou verificar o equipamento.', nota: false, tipo: 'texto' },
+      { autor: maiconId, texto: 'Nota interna: Testar reposição do rolete e recalibração do sensor de mídia no local.', nota: true, tipo: 'texto' },
     ];
 
     for (const m of msgs) {
@@ -430,8 +430,8 @@ Acompanhe sempre o histórico e mensagens dentro do chamado.`,
       `INSERT INTO historico_chamados (chamado_id, usuario_id, acao, descricao, status_anterior, status_novo)
        VALUES 
        ($1, $2, 'abertura', 'Chamado aberto pelo colaborador via Portal Sistech', NULL, 'aberto'),
-       ($1, $3, 'atribuicao', 'Chamado assumido pelo técnico Carlos Mendes', 'aberto', 'em_atendimento')`,
-      [chamado1Id, marinaId, carlosId]
+       ($1, $3, 'atribuicao', 'Chamado assumido pelo técnico Maicon Spitzer', 'aberto', 'em_atendimento')`,
+      [chamado1Id, marinaId, maiconId]
     );
   }
 
@@ -462,10 +462,10 @@ Acompanhe sempre o histórico e mensagens dentro do chamado.`,
   console.log('✅ Seeds demonstrativos inseridos com sucesso!');
   console.log('--- Credenciais de Acesso de Demonstração (Senha: sistech123) ---');
   console.log('• Colaboradora:  marina.santos  (RE: 00010)');
-  console.log('• Técnico TI:    carlos.mendes  (RE: 00003)');
-  console.log('• Técnico TI:    lucas.ferreira (RE: 00004)');
-  console.log('• Técnica TI:    fernanda.alves (RE: 00005)');
-  console.log('• Gestor de TI:  gestor.ti      (RE: 00002)');
+  console.log('• Técnico TI:    maiconspitzer  (RE: 10974)');
+  console.log('• Técnico TI:    rafael         (RE: 00004)');
+  console.log('• Técnico TI:    cristian       (RE: 00005)');
+  console.log('• Gestor de TI:  gabriel        (RE: 00002)');
   console.log('• Master Admin:  master.admin   (RE: 00001)');
 }
 

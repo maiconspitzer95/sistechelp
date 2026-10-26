@@ -175,27 +175,43 @@ export const LoginPage: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => handleQuickFill('carlos.mendes')}
+              onClick={() => handleQuickFill('maiconspitzer')}
               className="p-1.5 text-left border border-slate-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition text-[11px]"
             >
-              <div className="font-semibold text-slate-800">Carlos Mendes</div>
-              <div className="text-slate-500 text-[10px]">Técnico TI</div>
+              <div className="font-semibold text-slate-800">Maicon Spitzer</div>
+              <div className="text-slate-500 text-[10px]">Técnico de Suporte</div>
             </button>
             <button
               type="button"
-              onClick={() => handleQuickFill('gestor.ti')}
+              onClick={() => handleQuickFill('gabriel')}
               className="p-1.5 text-left border border-slate-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition text-[11px]"
             >
-              <div className="font-semibold text-slate-800">Gestor de TI</div>
-              <div className="text-slate-500 text-[10px]">Gestão</div>
+              <div className="font-semibold text-slate-800">Gabriel Lang</div>
+              <div className="text-slate-500 text-[10px]">Gestor de Atendimento</div>
             </button>
             <button
               type="button"
               onClick={() => handleQuickFill('master.admin')}
               className="p-1.5 text-left border border-slate-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition text-[11px]"
             >
-              <div className="font-semibold text-slate-800">Master Admin</div>
-              <div className="text-slate-500 text-[10px]">Administrador</div>
+              <div className="font-semibold text-slate-800">Administrador Master</div>
+              <div className="text-slate-500 text-[10px]">Administrador Master</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickFill('rafael')}
+              className="p-1.5 text-left border border-slate-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition text-[11px]"
+            >
+              <div className="font-semibold text-slate-800">Rafael Pereira</div>
+              <div className="text-slate-500 text-[10px]">Técnico de Suporte</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickFill('cristian')}
+              className="p-1.5 text-left border border-slate-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition text-[11px]"
+            >
+              <div className="font-semibold text-slate-800">Cristian Almeirda</div>
+              <div className="text-slate-500 text-[10px]">Técnico de Suporte</div>
             </button>
           </div>
         </div>

@@ -216,7 +216,7 @@ export async function listTickets(req: AuthRequest, res: Response) {
     const limitNum = Math.max(1, Math.min(100, parseInt(String(limit)) || 15));
     const offset = (pageNum - 1) * limitNum;
 
-    const params: any[] = [user.id];
+    const filterParams: any[] = [];
 
     let baseSql = `
       FROM chamados c
@@ -229,44 +229,44 @@ export async function listTickets(req: AuthRequest, res: Response) {
 
     // Regra de perfil: Colaborador só vê seus próprios chamados
     if (user.perfil_codigo === 'colaborador' || apenas_meus === 'true') {
-      params.push(user.id);
-      baseSql += ` AND c.solicitante_id = $${params.length}`;
+      filterParams.push(user.id);
+      baseSql += ` AND c.solicitante_id = $${filterParams.length}`;
     }
 
     if (status && status !== 'todos') {
       if (status === 'nao_atribuidos') {
         baseSql += ` AND c.tecnico_id IS NULL AND c.status IN ('aberto', 'em_triagem')`;
       } else if (status === 'meus_atendimentos') {
-        params.push(user.id);
-        baseSql += ` AND c.tecnico_id = $${params.length}`;
+        filterParams.push(user.id);
+        baseSql += ` AND c.tecnico_id = $${filterParams.length}`;
       } else {
-        params.push(status);
-        baseSql += ` AND c.status = $${params.length}`;
+        filterParams.push(status);
+        baseSql += ` AND c.status = $${filterParams.length}`;
       }
     }
 
     if (categoria_id) {
-      params.push(categoria_id);
-      baseSql += ` AND c.categoria_id = $${params.length}`;
+      filterParams.push(categoria_id);
+      baseSql += ` AND c.categoria_id = $${filterParams.length}`;
     }
 
     if (prioridade) {
-      params.push(prioridade);
-      baseSql += ` AND c.prioridade = $${params.length}`;
+      filterParams.push(prioridade);
+      baseSql += ` AND c.prioridade = $${filterParams.length}`;
     }
 
     if (tecnico_id) {
       if (tecnico_id === 'unassigned') {
         baseSql += ` AND c.tecnico_id IS NULL`;
       } else {
-        params.push(tecnico_id);
-        baseSql += ` AND c.tecnico_id = $${params.length}`;
+        filterParams.push(tecnico_id);
+        baseSql += ` AND c.tecnico_id = $${filterParams.length}`;
       }
     }
 
     if (setor_id) {
-      params.push(setor_id);
-      baseSql += ` AND c.setor_solicitante_id = $${params.length}`;
+      filterParams.push(setor_id);
+      baseSql += ` AND c.setor_solicitante_id = $${filterParams.length}`;
     }
 
     if (periodo) {
@@ -280,12 +280,12 @@ export async function listTickets(req: AuthRequest, res: Response) {
     }
 
     if (search) {
-      params.push(`%${search}%`);
-      baseSql += ` AND (c.protocolo ILIKE $${params.length} OR c.titulo ILIKE $${params.length} OR sol.nome ILIKE $${params.length} OR sol.re ILIKE $${params.length})`;
+      filterParams.push(`%${search}%`);
+      baseSql += ` AND (c.protocolo ILIKE $${filterParams.length} OR c.titulo ILIKE $${filterParams.length} OR sol.nome ILIKE $${filterParams.length} OR sol.re ILIKE $${filterParams.length})`;
     }
 
     // Contagem total para paginação
-    const countRes = await query(`SELECT COUNT(*) as total ${baseSql}`, params);
+    const countRes = await query(`SELECT COUNT(*) as total ${baseSql}`, filterParams);
     const total = parseInt(countRes.rows[0]?.total || '0', 10);
     const totalPages = Math.ceil(total / limitNum) || 1;
 
@@ -307,6 +307,10 @@ export async function listTickets(req: AuthRequest, res: Response) {
       orderBy = 'c.created_at DESC';
     }
 
+    const unreadParamIndex = filterParams.length + 1;
+    const limitParamIndex = filterParams.length + 2;
+    const offsetParamIndex = filterParams.length + 3;
+
     const selectSql = `
       SELECT c.id, c.protocolo, c.prioridade, c.status, c.titulo, c.descricao, c.vnc_ou_ip,
              c.created_at, c.updated_at, c.prazo_limite, c.data_resolucao, c.data_conclusao,
@@ -315,14 +319,14 @@ export async function listTickets(req: AuthRequest, res: Response) {
              setor_sol.id as setor_solicitante_id, setor_sol.nome as setor_solicitante_nome, setor_sol.sigla as setor_solicitante_sigla,
              tec.id as tecnico_id, tec.nome as tecnico_nome,
              (SELECT COUNT(*) FROM mensagens_chamados m WHERE m.chamado_id = c.id) as total_mensagens,
-             (SELECT COUNT(*) FROM mensagens_chamados m WHERE m.chamado_id = c.id AND m.lida = false AND m.autor_id != $1) as mensagens_nao_lidas,
+             (SELECT COUNT(*) FROM mensagens_chamados m WHERE m.chamado_id = c.id AND m.lida = false AND m.autor_id != $${unreadParamIndex}) as mensagens_nao_lidas,
              (SELECT MAX(created_at) FROM mensagens_chamados m WHERE m.chamado_id = c.id) as ultima_mensagem_em
       ${baseSql}
       ORDER BY ${orderBy}
-      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+      LIMIT $${limitParamIndex} OFFSET $${offsetParamIndex}
     `;
 
-    const selectParams = [...params, limitNum, offset];
+    const selectParams = [...filterParams, user.id, limitNum, offset];
     const result = await query(selectSql, selectParams);
 
     return res.json({

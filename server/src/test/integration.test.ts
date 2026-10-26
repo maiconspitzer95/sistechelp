@@ -31,13 +31,13 @@ async function runIntegrationTest() {
     const senhaOk = await bcrypt.compare('sistech123', marina.senha_hash);
     assert(senhaOk, 'Senha da colaboradora valida corretamente com Bcrypt');
 
-    // 2. Teste de Autenticação do Técnico (Carlos Mendes)
-    const carlosRes = await query(
-      "SELECT id, nome, login, pode_atender FROM usuarios WHERE login = 'carlos.mendes'"
+    // 2. Teste de Autenticação do Técnico (Maicon Spitzer)
+    const maiconRes = await query(
+      "SELECT id, nome, login, pode_atender FROM usuarios WHERE login = 'maiconspitzer'"
     );
-    assert(carlosRes.rows.length > 0, 'Técnico Carlos Mendes existe no banco');
-    const carlos = carlosRes.rows[0];
-    assert(carlos.pode_atender === true, 'Carlos Mendes possui permissão de atendimento de TI');
+    assert(maiconRes.rows.length > 0, 'Técnico Maicon Spitzer existe no banco');
+    const maicon = maiconRes.rows[0];
+    assert(maicon.pode_atender === true, 'Maicon Spitzer possui permissão de atendimento de TI');
 
     // 3. Teste de Categorias e Formulários Dinâmicos
     const catRes = await query("SELECT id, slug, nome FROM categorias WHERE slug = 'software'");
@@ -66,20 +66,20 @@ async function runIntegrationTest() {
     assert(testTicket.protocolo === testProtocol, `Chamado gerado com protocolo único: ${testProtocol}`);
     assert(testTicket.status === 'aberto', 'Status inicial do chamado é "aberto"');
 
-    // 5. Teste de Atribuição pelo Técnico (Carlos Mendes assume)
+    // 5. Teste de Atribuição pelo Técnico (Maicon Spitzer assume)
     await query(
       `UPDATE chamados SET tecnico_id = $1, status = 'em_atendimento', updated_at = NOW() WHERE id = $2`,
-      [carlos.id, testTicket.id]
+      [maicon.id, testTicket.id]
     );
     const updatedTicket = (await query('SELECT status, tecnico_id FROM chamados WHERE id = $1', [testTicket.id])).rows[0];
     assert(updatedTicket.status === 'em_atendimento', 'Chamado avançou para status "em_atendimento"');
-    assert(updatedTicket.tecnico_id === carlos.id, 'Chamado atribuído com sucesso a Carlos Mendes');
+    assert(updatedTicket.tecnico_id === maicon.id, 'Chamado atribuído com sucesso a Maicon Spitzer');
 
     // 6. Teste de Mensagens no Chat
     await query(
       `INSERT INTO mensagens_chamados (chamado_id, autor_id, conteudo, tipo, eh_nota_interna)
        VALUES ($1, $2, 'Olá Marina, você consegue testar se o VNC está conectado?', 'texto', false)`,
-      [testTicket.id, carlos.id]
+      [testTicket.id, maicon.id]
     );
     await query(
       `INSERT INTO mensagens_chamados (chamado_id, autor_id, conteudo, tipo, eh_nota_interna)
@@ -93,7 +93,7 @@ async function runIntegrationTest() {
     await query(
       `INSERT INTO mensagens_chamados (chamado_id, autor_id, conteudo, tipo, eh_nota_interna)
        VALUES ($1, $2, 'Nota interna confidencial: verificar cabo do switch 02', 'texto', true)`,
-      [testTicket.id, carlos.id]
+      [testTicket.id, maicon.id]
     );
     // Simular consulta feita por colaborador (deve filtrar eh_nota_interna = false)
     const collaboratorView = await query(
