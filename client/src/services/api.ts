@@ -76,7 +76,7 @@ export const api = {
     data: { conteudo: string; eh_nota_interna?: boolean; solicitar_info?: boolean }
   ) => apiRequest(`/chat/${chamadoId}`, { method: 'POST', body: JSON.stringify(data) }),
 
-  // Assistente Virtual Sistech
+  // Assistente Virtual Chip
   askAssistant: (question: string) =>
     apiRequest('/assistant/ask', { method: 'POST', body: JSON.stringify({ question }) }),
 

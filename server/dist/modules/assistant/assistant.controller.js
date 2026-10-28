@@ -10,6 +10,32 @@ async function askAssistant(req, res) {
             return res.status(400).json({ error: 'Pergunta não informada' });
         }
         const qLower = question.toLowerCase().trim();
+        // 0. Saudação e Apresentação Oficial do Chip
+        if (qLower === 'oi' ||
+            qLower === 'olá' ||
+            qLower === 'ola' ||
+            qLower === 'bom dia' ||
+            qLower === 'boa tarde' ||
+            qLower === 'boa noite' ||
+            qLower.startsWith('oi ') ||
+            qLower.startsWith('olá ') ||
+            qLower.startsWith('ola ') ||
+            qLower.includes('quem é você') ||
+            qLower.includes('quem e voce') ||
+            qLower.includes('qual o seu nome') ||
+            qLower.includes('qual seu nome') ||
+            qLower.includes('seu nome') ||
+            qLower.includes('chip')) {
+            return res.json({
+                reply: `Olá, ${user.nome.split(' ')[0]}! Eu sou o **Chip**, assistente virtual da TI da **Santa Casa de Pelotas**! 👋\n\nEstou aqui para tirar dúvidas, orientar sobre sistemas e impressoras ou te ajudar a abrir chamados com rapidez. Como posso te apoiar hoje?`,
+                suggestions: [
+                    'Como encontrar o VNC?',
+                    'Problema na impressora',
+                    'Solicitar novo login',
+                    'Consultar meus chamados',
+                ],
+            });
+        }
         // 1. Consulta ao andamento de chamados do usuário logado
         if (qLower.includes('meus chamado') ||
             qLower.includes('meu chamado') ||
@@ -147,7 +173,7 @@ async function askAssistant(req, res) {
         });
     }
     catch (error) {
-        console.error('Erro no assistente Sistech:', error);
+        console.error('Erro no assistente Chip:', error);
         return res.status(500).json({ error: 'Erro ao processar mensagem do assistente' });
     }
 }

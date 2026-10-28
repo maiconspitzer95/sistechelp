@@ -9,11 +9,11 @@ O **Sistech Desk** é uma plataforma web completa e moderna para gerenciamento d
 
 O sistema adota a paleta institucional em tons de azul-marinho, branco e cinza-claro, com cards arredondados, tipografia moderna (Inter) e ícones via Lucide React.
 
-O mascote oficial **Sistech** (`assets/sistech.png`) está presente de forma destacada em:
+O mascote oficial **Chip** (`public/assets/mascote-chip.png`) está presente de forma destacada em:
 - Tela de login institucional;
 - Painel de boas-vindas do colaborador;
 - Menu lateral azul-marinho;
-- Janela flutuante do assistente virtual de suporte.
+- Janela flutuante e botão do assistente virtual de suporte (Chip — Assistente de TI).
 
 ---
 

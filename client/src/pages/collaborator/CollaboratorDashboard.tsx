@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import { Ticket } from '../../types';
+import { ChipMascot } from '../../components/common/ChipMascot';
 import {
   PlusCircle,
   Inbox,
@@ -117,7 +118,7 @@ export const CollaboratorDashboard: React.FC = () => {
             </h1>
             <p className="text-sm text-slate-300 leading-relaxed">
               Abra chamados para suporte a sistemas, impressoras, computadores ou solicite novos logins com facilidade.
-              Nossa equipe técnica e o assistente Sistech estão à sua disposição!
+              Nossa equipe técnica e o assistente Chip estão à sua disposição!
             </p>
 
             {/* 3 Botões Principais */}
@@ -140,29 +141,27 @@ export const CollaboratorDashboard: React.FC = () => {
 
               <button
                 onClick={() => {
-                  const btn = document.querySelector('button[title*="Falar com o Sistech"]') as HTMLButtonElement;
+                  const btn = (document.querySelector('button[title*="Falar com o Chip"]') ||
+                    document.querySelector('button[title*="Chip"]')) as HTMLButtonElement;
                   if (btn) btn.click();
                 }}
-                className="flex items-center space-x-2 px-4 py-2.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 font-medium text-xs rounded-xl border border-cyan-400/30 transition"
+                className="flex items-center space-x-2 px-4 py-2.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 font-medium text-xs rounded-xl border border-cyan-400/30 transition shadow-sm"
               >
                 <MessageSquare className="w-4 h-4 text-cyan-300" />
-                <span>Falar com o Sistech</span>
+                <span>Falar com o Chip</span>
               </button>
 
             </div>
           </div>
 
-          {/* Mascote Sistech com destaque */}
+          {/* Mascote Chip com destaque institucional */}
           <div className="shrink-0 flex items-center justify-center">
-            <div className="relative">
-              <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-tr from-cyan-500/20 to-blue-500/10 flex items-center justify-center border-2 border-cyan-400/30 shadow-2xl backdrop-blur-md">
-                <img
-                  src="/sistech.png"
-                  alt="Mascote Sistech Oficial"
-                  className="w-28 h-28 sm:w-36 sm:h-36 object-contain drop-shadow-xl hover:rotate-3 transition duration-300"
-                />
-              </div>
-            </div>
+            <ChipMascot
+              size="banner"
+              alt="Mascote Chip — Assistente Oficial da TI"
+              interactive={true}
+              className="drop-shadow-2xl"
+            />
           </div>
         </div>
       </div>

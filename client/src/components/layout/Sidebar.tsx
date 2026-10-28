@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { ChipMascot } from '../common/ChipMascot';
 import {
   Home,
   PlusCircle,
@@ -29,15 +30,15 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside className="w-64 bg-navy-900 border-r border-slate-800 flex flex-col h-screen sticky top-0 text-white select-none">
-      {/* Topo: Mascote Sistech e Título */}
+      {/* Topo: Mascote Chip e Título */}
       <div className="p-5 border-b border-slate-800 flex items-center space-x-3">
         <div className="relative">
-          <img
-            src="/sistech.png"
-            alt="Mascote Sistech"
-            className="w-11 h-11 object-contain drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]"
+          <ChipMascot
+            size="sm"
+            className="w-11 h-11 drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]"
+            alt="Mascote Chip"
+            showStatus={true}
           />
-          <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-navy-900 rounded-full" />
         </div>
         <div className="flex flex-col">
           <span className="text-base font-extrabold tracking-wide text-white flex items-center gap-1">
@@ -103,24 +104,22 @@ export const Sidebar: React.FC = () => {
         {isGestor && (
           <div>
             <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-              Administração
+              Gestão & Controle
             </div>
             <nav className="space-y-1">
               <NavLink to="/admin/users" className={linkClass}>
-                <Users className="w-4 h-4 text-sky-400" />
-                <span>Usuários & Técnicos</span>
+                <Users className="w-4 h-4 text-slate-400" />
+                <span>Usuários & Equipe</span>
+              </NavLink>
+              <NavLink to="/admin/sectors" className={linkClass}>
+                <Building2 className="w-4 h-4 text-slate-400" />
+                <span>Setores da Santa Casa</span>
               </NavLink>
               {isMaster && (
-                <>
-                  <NavLink to="/admin/sectors" className={linkClass}>
-                    <Building2 className="w-4 h-4 text-teal-400" />
-                    <span>Setores Hospitalares</span>
-                  </NavLink>
-                  <NavLink to="/admin/audit" className={linkClass}>
-                    <ShieldCheck className="w-4 h-4 text-rose-400" />
-                    <span>Auditoria do Sistema</span>
-                  </NavLink>
-                </>
+                <NavLink to="/admin/audit" className={linkClass}>
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span>Auditoria & Segurança</span>
+                </NavLink>
               )}
             </nav>
           </div>

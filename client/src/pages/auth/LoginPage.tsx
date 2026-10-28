@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, User, AlertCircle, ArrowRight, Shield } from 'lucide-react';
+import { ChipMascot } from '../../components/common/ChipMascot';
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
@@ -46,17 +47,16 @@ export const LoginPage: React.FC = () => {
         {/* Detalhe visual de topo */}
         <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-600 via-brand-cyan to-blue-800" />
 
-        {/* Mascote Sistech Centralizado */}
+        {/* Mascote Chip Oficial Centralizado */}
         <div className="flex flex-col items-center text-center mb-6">
-          <div className="relative group mb-3">
-            <div className="w-24 h-24 rounded-full bg-blue-50 border-2 border-blue-200/80 flex items-center justify-center p-2 shadow-inner">
-              <img
-                src="/sistech.png"
-                alt="Mascote Oficial Sistech"
-                className="w-20 h-20 object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
-              />
-            </div>
-            <span className="absolute bottom-1 right-2 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full shadow-sm" />
+          <div className="relative group mb-2 inline-flex items-center justify-center">
+            <ChipMascot
+              size="lg"
+              className="w-24 h-24 drop-shadow-xl"
+              alt="Mascote Chip — Santa Casa de Pelotas"
+              interactive={true}
+              showStatus={true}
+            />
           </div>
 
           <h1 className="text-2xl font-black text-slate-800 tracking-tight">
